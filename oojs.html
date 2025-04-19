@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="hu">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web-programozás-1 Előadás Házi feladat</title>
+    <link rel="stylesheet" href="index.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1>Web-programozás-1 Előadás Házi feladat</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="tablazat.html">Táblázat</a></li>
+            <li><a href="html5.html">HTML5</a></li>
+            <li><a href="chartjs.html">ChartJS</a></li>
+            <li><a href="ajax.html">AJAX</a></li>
+            <li><a href="oojs.html" class="active">OOJS</a></li>
+        </ul>
+    </nav>
+    <script>
+       
+        class CrochetProject {
+            constructor(name, yarn, hookSize, difficulty) {
+                this.name = name;
+                this.yarn = yarn;
+                this.hookSize = hookSize;
+                this.difficulty = difficulty;
+                this.completed = false;
+            }
+
+            displayInfo() {
+                const projectDiv = document.createElement('div');
+                projectDiv.className = 'project';
+
+                const title = document.createElement('h2');
+                title.textContent = this.name;
+
+                const details = document.createElement('p');
+                details.textContent = `Fonal: ${this.yarn} | Tűméret: ${this.hookSize}mm | Nehézség: ${this.difficulty}`;
+
+                const status = document.createElement('p');
+                status.textContent = this.completed ? 'Állapot: Kész' : 'Állapot: Folyamatban';
+
+                const toggleButton = document.createElement('button');
+                toggleButton.textContent = this.completed ? 'Állapot: Folyamatban' : 'Állapot: Kész';
+                toggleButton.addEventListener('click', () => this.toggleStatus(status, toggleButton));
+
+                projectDiv.appendChild(title);
+                projectDiv.appendChild(details);
+                projectDiv.appendChild(status);
+                projectDiv.appendChild(toggleButton);
+
+                return projectDiv;
+            }
+
+            toggleStatus(statusElement, buttonElement) {
+                this.completed = !this.completed;
+                statusElement.textContent = this.completed ? 'Állapot: Kész' : 'Állapot: Folyamatban';
+                buttonElement.textContent = this.completed ? 'Állapot: Folyamatban' : 'Állapot: Kész';
+            }
+        }
+
+        
+        class AmigurumiProject extends CrochetProject {
+            constructor(name, yarn, hookSize, difficulty, character) {
+                super(name, yarn, hookSize, difficulty);
+                this.character = character;
+            }
+
+            displayInfo() {
+                const projectDiv = super.displayInfo();
+
+                const characterInfo = document.createElement('p');
+                characterInfo.textContent = `Karakter: ${this.character}`;
+
+                // A karakter információt a részletek után, de az állapot előtt helyezi el
+                projectDiv.insertBefore(characterInfo, projectDiv.children[2]);
+
+                return projectDiv;
+            }
+        }
+
+        // Az alkalmazás inicializálása
+        function initApp() {
+            const appContainer = document.createElement('div');
+            appContainer.className = 'amigurumi-tracker';
+
+            const heading = document.createElement('h1');
+            heading.textContent = 'Amigurumi Projekt';
+            appContainer.appendChild(heading);
+
+            // Néhány példa amigurumi projekt létrehozása
+            const teddyBear = new AmigurumiProject('Maci', 'Pamut', 3.5, 'Középhaladó', 'Maci');
+            const octopus = new AmigurumiProject('Mini Polip', 'Akril', 2.5, 'Kezdő', 'Polip');
+            const dragon = new AmigurumiProject('Tűz Sárkány', 'Pamut keverék', 3.0, 'Haladó', 'Sárkány');
+
+            // A projektek hozzáadása a konténerhez
+            appContainer.appendChild(teddyBear.displayInfo());
+            appContainer.appendChild(octopus.displayInfo());
+            appContainer.appendChild(dragon.displayInfo());
+
+            // Alapvető stílusok hozzáadása
+            const style = document.createElement('style');
+            style.textContent = `
+                .amigurumi-tracker {
+                    font-family: Arial, sans-serif;
+                    max-width: 600px;
+                    margin: 0 auto;
+                    padding: 20px;
+                }
+                .project {
+                    border: 1px solid #ddd;
+                    padding: 15px;
+                    margin-bottom: 20px;
+                    border-radius: 5px;
+                }
+                button {
+                    background-color: #FF6B6B;
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    cursor: pointer;
+                    border-radius: 3px;
+                }
+                button:hover {
+                    background-color: #FF5252;
+                }
+            `;
+
+            document.head.appendChild(style);
+            document.body.appendChild(appContainer);
+        }
+
+        // Az alkalmazás indítása, amikor az oldal betöltődik
+        window.onload = initApp;
+    </script>
+    <footer>
+        
+    </footer>
+</body>
+</html>
