@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="hu">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kezdőlap</title>
+    <link rel="stylesheet" href="index.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <h1>Web-programozás-1 Előadás Házi feladat</h1>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="tablazat.html">Táblázat</a></li>
+            <li><a href="html5.html" class="active">HTML5</a></li>
+            <li><a href="chartjs.html">ChartJS</a></li>
+            <li><a href="ajax.html">AJAX</a></li>
+            <li><a href="oojs.html">OOJS</a></li>
+        </ul>
+    </nav>
+
+    <main>
+
+        <aside class="sidebar">
+            <img src="sidebar.png" class="img-fluid" alt="Sidebar Image">
+        </aside>
+        <div>
+            <div class="section">
+                <h3>Jegyzetek</h3>
+                <label for="noteInput">Ide írd a jegyzeteid:</label>
+                <textarea id="noteInput" placeholder="Írja ide a jegyzeteit..." rows="4"
+                    style="width: 100%;"></textarea>
+                <button onclick="saveNote()">Jegyzet mentése</button>
+                <button onclick="loadNote()">Jegyzet betöltése</button>
+                <button onclick="clearNote()">Jegyzet törlése</button>
+                <p id="noteOutput" style="margin-top: 10px; font-style: italic;"></p>
+            </div>
+
+            <div class="section">
+                <h3>🧶 Horgolás Időmérő</h3>
+                <button onclick="startTimer()">Indítás</button>
+                <button onclick="stopTimer()">Leállítás</button>
+                <button onclick="resetTimer()">Nullázás</button>
+                <p id="timerOutput">Eltelt idő: 0 mp</p>
+            </div>
+
+            <div class="section">
+                <h3>Getting Server Updates</h3>
+                <div id="result"></div>
+            </div>
+
+            <div class="section">
+                <h3>Fájl feltöltése</h3>
+                <div id="dropZone" class="drop-zone">
+                    <p>Húzza ide a fájlt vagy kattintson a feltöltéshez</p>
+                    <input type="file" id="fileInput" style="display: none;">
+                </div>
+                <p id="uploadMessage"></p>
+                <div id="uploadedImageContainer" style="margin-top: 20px;">
+                    <h4>Feltöltött kép:</h4>
+                    <div id="uploadedImage" style="border: 1px solid #ddd; padding: 10px; text-align: center;">
+                        <p>Nincs feltöltött kép.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>🎨 Rajzolás</h3>
+                <canvas id="drawingCanvas" width="500" height="300" style="border: 1px solid #000;"></canvas>
+                <button onclick="clearCanvas()">Vászon törlése</button>
+                <button onclick="saveCanvas()">Vászon mentése</button>
+            </div>
+            <h1>SVG</h1>
+
+            <!-- SVG Container -->
+            <svg viewBox="0 0 300 200" width="300" height="200"
+                style="border: 1px solid #ccc; background-color: white;">
+                <!-- Circle -->
+                <circle cx="50" cy="50" r="40" stroke="black" stroke-width="2" fill="red" />
+
+                <!-- Rectangle -->
+                <rect x="120" y="20" width="60" height="60" stroke="black" stroke-width="2" fill="blue" />
+
+                <!-- Line -->
+                <line x1="220" y1="20" x2="260" y2="80" stroke="green" stroke-width="4" />
+
+                <!-- Text -->
+                <text x="30" y="120" fill="purple" font-size="16">SVG Text</text>
+
+                <!-- Path (simple) -->
+                <path d="M100 120 L200 120 L150 170 Z" fill="orange" stroke="black" stroke-width="2" />
+            </svg>
+        </div>
+        </div>
+    </main>
+
+    <script>
+        // Jegyzet mentése
+        function saveNote() {
+            const note = document.getElementById("noteInput").value;
+            if (note.trim() === "") {
+                alert("Kérjük, írjon be egy jegyzetet a mentéshez.");
+                return;
+            }
+            localStorage.setItem("crochetNote", note);
+            alert("Jegyzet sikeresen mentve!");
+        }
+
+        // Jegyzet betöltése
+        function loadNote() {
+            const savedNote = localStorage.getItem("crochetNote");
+            if (savedNote) {
+                document.getElementById("noteOutput").innerText = `Mentett jegyzet: ${savedNote}`;
+            } else {
+                document.getElementById("noteOutput").innerText = "Nincs mentett jegyzet.";
+            }
+        }
+
+        // Jegyzet törlése
+        function clearNote() {
+            localStorage.removeItem("crochetNote");
+            document.getElementById("noteOutput").innerText = "";
+            alert("Jegyzet sikeresen törölve!");
+        }
+    </script>
+    <script>
+        // A Web Worker inicializálása
+        const timerWorker = new Worker("idozitoWorker.js");
+
+        // Az üzenetek kezelése a workerből
+        timerWorker.onmessage = function (e) {
+            const { type, seconds, message } = e.data;
+
+            if (type === "tick") {
+                document.getElementById("timerOutput").innerText = `Eltelt idő: ${seconds} másodperc`;
+            } else if (type === "status") {
+                console.log(message); // Állapotüzenetek naplózása (pl. "Időzítő elindítva")
+            }
+        };
+
+        // Az időzítő indítása
+        function startTimer() {
+            timerWorker.postMessage("start");
+        }
+
+        // Az időzítő leállítása
+        function stopTimer() {
+            timerWorker.postMessage("stop");
+        }
+
+        // Az időzítő nullázása
+        function resetTimer() {
+            timerWorker.postMessage("reset");
+        }
+    </script>
+    <script>
+        // Ellenőrzi, hogy a böngésző támogatja-e a Server-Sent Events (SSE) technológiát
+        if (typeof (EventSource) !== "undefined") {
+            var source = new EventSource("demo_sse.php"); // Kapcsolódik a szerverhez
+            let messageCount = 0; // Üzenetek számlálója
+
+            source.onmessage = function (event) {
+                // A szerverről érkező üzeneteket hozzáadja az #result elemhez
+                document.getElementById("result").innerHTML += event.data + "<br>";
+                messageCount++; // Növeli az üzenetek számlálóját
+
+                // Ha elérte a 3 üzenetet, lezárja a kapcsolatot
+                if (messageCount >= 3) {
+                    source.close(); // SSE kapcsolat lezárása
+                    document.getElementById("result").innerHTML += "<p><em>Kapcsolat lezárva 3 üzenet után.</em></p>";
+                }
+            };
+        } else {
+            // Ha a böngésző nem támogatja az SSE-t, hibaüzenetet jelenít meg
+            document.getElementById("result").innerHTML = "Sorry, your browser does not support server-sent events...";
+        }
+    </script>
+    <script>
+        const dropZone = document.getElementById("dropZone");
+        const fileInput = document.getElementById("fileInput");
+        const uploadMessage = document.getElementById("uploadMessage");
+        const galleryContainer = document.querySelector(".gallery-container");
+
+        // A kiemelés eltávolítása, amikor az egér elhagyja a drop zónát
+        dropZone.addEventListener("dragleave", () => {
+            dropZone.classList.remove("dragover");
+        });
+
+        // A drop zóna kiemelése, amikor egy fájlt fölé húznak
+        dropZone.addEventListener("dragover", (event) => {
+            event.preventDefault();
+            dropZone.classList.add("dragover");
+        });
+
+        // Fájlok kezelése, amikor azokat a drop zónába dobják
+        dropZone.addEventListener("drop", (event) => {
+            event.preventDefault();
+            dropZone.classList.remove("dragover");
+            const files = event.dataTransfer.files;
+            handleFiles(files);
+        });
+
+        // Fájl kiválasztása kattintással
+        dropZone.addEventListener("click", () => {
+            fileInput.click();
+        });
+
+        // Fájlok kezelése a fájlválasztó párbeszédablakból
+        fileInput.addEventListener("change", (event) => {
+            const files = event.target.files;
+            handleFiles(files);
+        });
+
+        // Fájlok feldolgozása
+        function handleFiles(files) {
+            if (files.length === 0) {
+                uploadMessage.innerText = "Nincs kiválasztott fájl.";
+                return;
+            }
+
+            const file = files[0];
+            if (!file.type.startsWith("image/")) {
+                uploadMessage.innerText = "Csak képfájlokat tölthet fel!";
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = document.createElement("img");
+                img.src = event.target.result;
+                img.alt = "Feltöltött kép";
+                img.style.maxWidth = "100%";
+                img.style.height = "auto";
+
+                const uploadedImageContainer = document.getElementById("uploadedImage");
+                uploadedImageContainer.innerHTML = ""; // Clear previous content
+                uploadedImageContainer.appendChild(img); // Add the new image
+
+                uploadMessage.innerText = "A kép sikeresen hozzáadva!";
+            };
+            reader.readAsDataURL(file);
+        }
+
+        const canvas = document.getElementById("drawingCanvas");
+        const ctx = canvas.getContext("2d");
+        let isDrawing = false;
+
+        // Rajzolás indítása
+        canvas.addEventListener("mousedown", (event) => {
+            isDrawing = true;
+            ctx.beginPath();
+            ctx.moveTo(event.offsetX, event.offsetY);
+        });
+
+        // Rajzolás a vásznon
+        canvas.addEventListener("mousemove", (event) => {
+            if (isDrawing) {
+                ctx.lineTo(event.offsetX, event.offsetY);
+                ctx.strokeStyle = "#ff1493"; // Rajzolási szín
+                ctx.lineWidth = 2; // Vonalvastagság
+                ctx.stroke();
+            }
+        });
+
+        // Rajzolás leállítása
+        canvas.addEventListener("mouseup", () => {
+            isDrawing = false;
+            ctx.closePath();
+        });
+
+        canvas.addEventListener("mouseleave", () => {
+            isDrawing = false;
+            ctx.closePath();
+        });
+
+        // Vászon törlése
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Vászon mentése képként
+        function saveCanvas() {
+            const link = document.createElement("a");
+            link.download = "rajz.png";
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+    </script>
+    <footer>
+        <p>Laczikó Henrietta - F1KDCI</p>
+    </footer>
+</body>
+
+</html>
+```
