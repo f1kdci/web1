@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React SPA - Két Alkalmazás</title>
+  
+  <!-- React betöltése -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <link rel="stylesheet" href="react.css">
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script>
+    const { useState } = React;
+
+    function MemoryGame() {
+      const [cards, setCards] = useState([]);
+      const [flipped, setFlipped] = useState([]);
+      const [matched, setMatched] = useState([]);
+      const [moves, setMoves] = useState(0);
+
+      React.useEffect(() => {
+        const emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊'];  
+        const duplicated = [...emojis, ...emojis];
+        const shuffled = duplicated.sort(() => Math.random() - 0.5);
+        setCards(shuffled);
+      }, []);
+
+      const handleCardClick = (index) => {
+        if (flipped.length === 2 || flipped.includes(index) || matched.includes(index)) return;
+        
+        const newFlipped = [...flipped, index];
+        setFlipped(newFlipped);
+
+        if (newFlipped.length === 2) {
+          setMoves(moves + 1);
+          if (cards[newFlipped[0]] === cards[newFlipped[1]]) {
+            setMatched([...matched, ...newFlipped]);
+            setFlipped([]);
+          } else {
+            setTimeout(() => setFlipped([]), 1000);
+          }
+        }
+      };
+
+
+      const resetGame = () => {
+        const shuffled = [...cards].sort(() => Math.random() - 0.5);
+        setCards(shuffled);
+        setFlipped([]);
+        setMatched([]);
+        setMoves(0);
+      };
+
+      return React.createElement('div', { className: 'memory-game' },
+        React.createElement('h2', null, 'Memória Játék'),
+        React.createElement('div', { style: { marginBottom: '1em' } },
+          `Lépések száma: ${moves}`
+        ),
+        React.createElement('div', {
+          style: {
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',  
+            gridTemplateRows: 'repeat(3, 1fr)',    
+            gap: '10px',
+            maxWidth: '400px',
+            margin: '0 auto'
+          }
+        },
+          cards.map((card, index) =>
+            React.createElement('button', {
+              key: index,
+              onClick: () => handleCardClick(index),
+              style: {
+                width: '80px',
+                height: '80px',
+                fontSize: '2em',
+                border: '2px solid #ccc',
+                borderRadius: '8px',
+                backgroundColor: matched.includes(index) ? '#90EE90' :
+                               flipped.includes(index) ? '#fff' : '#6495ED',
+                cursor: 'pointer'
+              }
+            }, flipped.includes(index) || matched.includes(index) ? card : '')
+          )
+        ),
+        React.createElement('button', {
+          onClick: resetGame,
+          style: {
+            marginTop: '1em',
+            padding: '8px 16px',
+            backgroundColor: '#4CAF50',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }
+        }, 'Új játék')
+      );
+    }
+
+    // Kalória Számláló 
+    function CalorieCounter() {
+      const [meals, setMeals] = useState([]);
+      const [totalCalories, setTotalCalories] = useState(0);
+      const [grams, setGrams] = useState('');
+
+      
+      const presetMeals = [
+        { name: 'Pizza', icon: '🍕', calPer100g: 266 },
+        { name: 'Alma', icon: '🍎', calPer100g: 52 },
+        { name: 'Csirkemell', icon: '🍗', calPer100g: 165 },
+        { name: 'Tészta', icon: '🍝', calPer100g: 158 },
+        { name: 'Banán', icon: '🍌', calPer100g: 89 }
+      ];
+
+      // Előre definiált étel hozzáadása
+      const handlePresetMeal = (preset) => {
+        if (grams > 0) {
+          const calculatedCalories = Math.round((preset.calPer100g * parseInt(grams)) / 100);
+          const newMeal = {
+            id: Date.now(),
+            name: `${preset.icon} ${preset.name}`,
+            calories: calculatedCalories,
+            grams: parseInt(grams),
+            time: new Date().toLocaleTimeString()
+          };
+          
+          setMeals([...meals, newMeal]);
+          setTotalCalories(totalCalories + calculatedCalories);
+          setGrams('');
+        }
+      };
+
+    
+      const deleteMeal = (id, calories) => {
+        setMeals(meals.filter(meal => meal.id !== id));
+        setTotalCalories(totalCalories - calories);
+      };
+
+      const clearAll = () => {
+        setMeals([]);
+        setTotalCalories(0);
+      };
+
+      const getDailySummaries = () => {
+        const summaries = {};
+        meals.forEach(meal => {
+          const date = new Date().toLocaleDateString();
+          if (!summaries[date]) {
+            summaries[date] = 0;
+          }
+          summaries[date] += meal.calories;
+        });
+        return summaries;
+      };
+
+      return React.createElement('div', { 
+        className: 'calorie-counter',
+        style: {
+          background: 'white',
+          padding: '20px',
+          borderRadius: '8px',
+          boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+        }
+      },
+        React.createElement('h2', null, 'Kalória Számláló'),
+        
+        React.createElement('div', {
+          style: {
+            display: 'flex',
+            gap: '10px',
+            marginBottom: '20px',
+            flexWrap: 'wrap'
+          }
+        },
+          React.createElement('input', {
+            type: 'number',
+            placeholder: 'Gramm',
+            value: grams,
+            onChange: (e) => setGrams(e.target.value),
+            style: {
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #ddd',
+              width: '80px'
+            }
+          }),
+          presetMeals.map(meal => 
+            React.createElement('button', {
+              key: meal.name,
+              onClick: () => handlePresetMeal(meal),
+              disabled: !grams,
+              style: {
+                padding: '8px 16px',
+                fontSize: '1.2em',
+                backgroundColor: grams ? '#4CAF50' : '#cccccc',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: grams ? 'pointer' : 'not-allowed',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px'
+              }
+            }, 
+              meal.icon,
+              React.createElement('span', {
+                style: { fontSize: '0.8em' }
+              }, `${meal.calPer100g}kcal/100g`)
+            )
+          )
+        ),
+
+        React.createElement('div', { 
+          style: { 
+            marginBottom: '20px',
+            fontSize: '1.2em',
+            fontWeight: 'bold'
+          } 
+        }, `Összes kalória: ${totalCalories} kcal`),
+
+        React.createElement('div', null,
+          meals.map(meal => 
+            React.createElement('div', {
+              key: meal.id,
+              style: {
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '10px',
+                marginBottom: '10px',
+                backgroundColor: '#f5f5f5',
+                borderRadius: '4px'
+              }
+            },
+              React.createElement('div', null,
+                React.createElement('strong', null, meal.name),
+                React.createElement('span', { 
+                  style: { marginLeft: '10px', color: '#666' } 
+                }, `${meal.grams ? `${meal.grams}g = ` : ''}${meal.calories} kcal`),
+                React.createElement('span', { 
+                  style: { marginLeft: '10px', color: '#888', fontSize: '0.9em' } 
+                }, meal.time)
+              ),
+              React.createElement('button', {
+                onClick: () => deleteMeal(meal.id, meal.calories),
+                style: {
+                  padding: '5px 10px',
+                  backgroundColor: '#f44336',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }
+              }, 'Törlés')
+            )
+          )
+        ),
+
+        // Összes törlése gomb
+        meals.length > 0 && React.createElement('button', {
+          onClick: clearAll,
+          style: {
+            marginTop: '20px',
+            padding: '8px 16px',
+            backgroundColor: '#ff9800',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }
+        }, 'Összes törlése'),
+
+        // Összesítő szekció az oldal alján
+        React.createElement('div', {
+          style: {
+            marginTop: '30px',
+            padding: '20px',
+            backgroundColor: '#f8f9fa',
+            borderRadius: '8px',
+            borderTop: '2px solid #dee2e6'
+          }
+        },
+          React.createElement('h3', {
+            style: {
+              marginTop: '0',
+              color: '#343a40'
+            }
+          }, 'Napi összesítés'),
+          React.createElement('div', null,
+            Object.entries(getDailySummaries()).map(([date, calories]) =>
+              React.createElement('div', {
+                key: date,
+                style: {
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  padding: '8px 0',
+                  borderBottom: '1px solid #dee2e6'
+                }
+              },
+                React.createElement('span', null, date),
+                React.createElement('span', {
+                  style: { fontWeight: 'bold' }
+                }, `${calories} kcal`)
+              )
+            )
+          ),
+          meals.length === 0 && React.createElement('div', {
+            style: { color: '#6c757d', fontStyle: 'italic' }
+          }, 'Még nincsenek rögzített étkezések')
+        )
+      );
+    }
+
+    function App() {
+      const [page, setPage] = useState('memory');
+
+      return React.createElement('div', null,
+        React.createElement('nav', null,
+          React.createElement('button', {
+            onClick: () => setPage('memory'),
+            className: page === 'memory' ? 'active' : ''
+          }, 'Memória Játék'),
+          React.createElement('button', {
+            onClick: () => setPage('calories'),
+            className: page === 'calories' ? 'active' : ''
+          }, 'Kalória Számláló')
+        ),
+        React.createElement('main', null,
+          page === 'memory' ? React.createElement(MemoryGame) : React.createElement(CalorieCounter)
+        )
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(React.createElement(App));
+  </script>
+</body>
+</html>
