@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="hu">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web-programozás-1 Előadás Házi feladat</title>
+    <link rel="stylesheet" href="index.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <h1>Web-programozás-1 Előadás Házi feladat</h1>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="tablazat.html">Táblázat</a></li>
+            <li><a href="html5.html">HTML5</a></li>
+            <li><a href="chartjs.html" class="active">ChartJS</a></li>
+            <li><a href="ajax.html">AJAX</a></li>
+            <li><a href="oojs.html">OOJS</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <aside class="sidebar">
+            <img src="sidebar.png" class="img-fluid" alt="Sidebar Image">
+        </aside>
+
+        <div class="content">
+            <h3>Öltések száma naponta a projekteknél</h3>
+            <table id="dataTable" border="1" style="width: 100%; text-align: center;">
+                <thead>
+                    <tr>
+                        <th>Amigurumi nyuszi</th>
+                        <th>Granny takaró</th>
+                        <th>Téli sapka</th>
+                        <th>Baba kesztyű</th>
+                        <th>Gyapjú sál</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr onclick="plotRow(this)">
+                        <td>123</td>
+                        <td>198</td>
+                        <td>145</td>
+                        <td>276</td>
+                        <td>167</td>
+                    </tr>
+                    <tr onclick="plotRow(this)">
+                        <td>234</td>
+                        <td>156</td>
+                        <td>190</td>
+                        <td>210</td>
+                        <td>95</td>
+                    </tr>
+                    <tr onclick="plotRow(this)">
+                        <td>175</td>
+                        <td>220</td>
+                        <td>276</td>
+                        <td>134</td>
+                        <td>90</td>
+                    </tr>
+                    <tr onclick="plotRow(this)">
+                        <td>145</td>
+                        <td>167</td>
+                        <td>234</td>
+                        <td>198</td>
+                        <td>123</td>
+                    </tr>
+                    <tr onclick="plotRow(this)">
+                        <td>190</td>
+                        <td>95</td>
+                        <td>210</td>
+                        <td>156</td>
+                        <td>175</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Vonaldiagram</h3>
+            <canvas id="lineChart" width="400" height="200"></canvas>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                let chart; // A Chart.js diagram objektum
+
+                // Sor adatainak ábrázolása
+                function plotRow(row) {
+                    const rowData = Array.from(row.children).map(cell => parseInt(cell.innerText)); // Sor adatainak lekérése
+                    const labels = rowData.map((_, index) => `Adat ${index + 1}`); // Címkék generálása
+
+                    // Ha már létezik diagram, frissítjük
+                    if (chart) {
+                        chart.data.labels = labels;
+                        chart.data.datasets[0].data = rowData;
+                        chart.update();
+                    } else {
+                        // Új diagram létrehozása
+                        const ctx = document.getElementById('lineChart').getContext('2d');
+                        chart = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Kiválasztott sor adatai',
+                                    data: rowData,
+                                    borderColor: '#e75480', 
+                                    backgroundColor: 'rgba(231, 84, 128, 0.2)', 
+                                    borderWidth: 2,
+                                    tension: 0.4
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        display: true,
+                                        position: 'top'
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        title: {
+                                            display: true,
+                                            text: 'Adatok'
+                                        }
+                                    },
+                                    y: {
+                                        title: {
+                                            display: true,
+                                            text: 'Értékek'
+                                        },
+                                        beginAtZero: true
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            </script>
+    </main>
+
+    <footer>
+        <p>Laczikó Henrietta - F1KDCI</p>
+      </footer>
+</body>
+
+</html>
